@@ -1,6 +1,18 @@
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
 
 var mirrorToScreen = false;
 
@@ -158,6 +170,7 @@ function render(dt) {
     if (mirrorRenderer) {
         mirrorRenderer.render(scene, camera);
     }
+    vrElements.animateElements(dt);
     //renderer.clearDepth();
     //effect.render(hudScene, camera);
 }
@@ -210,6 +223,11 @@ var HTML2VR = function () {
             vrElements.setStylesheet.apply(vrElements, args);
         }
     }, {
+        key: "setAnimationFrameRate",
+        value: function setAnimationFrameRate(rate) {
+            vrElements.setAnimationFrameRate(rate);
+        }
+    }, {
         key: "setVrOnlyStylesheet",
         value: function setVrOnlyStylesheet(sheet) {
             vrOnlyStylesheet = sheet;
@@ -220,7 +238,7 @@ var HTML2VR = function () {
         value: function useVrOnlyStylesheet(bool) {
             for (var i in document.styleSheets) {
                 if (document.styleSheets[i].ownerNode && document.styleSheets[i].ownerNode.id === vrOnlyStylesheet) {
-                    void (document.styleSheets.item(i).disabled = !bool);
+                    document.styleSheets.item(i).disabled = !bool;
                 }
             }
         }

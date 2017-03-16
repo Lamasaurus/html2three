@@ -5,6 +5,9 @@ class ThreeHtmlElements {
         
         this.elements = [];
         this.domStyles = null;
+        this.performingAnimation = false;
+        this.totaldt = 0;
+        this.setAnimationFrameRate(15);
     }
     
     setStylesheet(domStyles) {
@@ -58,6 +61,32 @@ class ThreeHtmlElements {
 
     get representation() {
         return this.obj;
+    }
+
+    animateElements(dt){
+        if(HTML2VR.inVR){
+
+            this.totaldt += dt;
+
+            if(this.totaldt >= this.animationFrameRate){
+                this.totaldt = 0;
+                for( var i in this.elements)
+                    if(this.elements[i].isPerformingAnimation)
+                        this.elements[i].update();
+            }
+
+        }
+    }
+
+    /* Asumes that if the rate is bigger or aqual to 1, that the user means rate per seconde 
+     * (like 60fps). And when the users gives a rate lower than 0 he means the amount of
+     * sencondes that need to pass before the next frame (like 0.03 secondes per frame).
+     */
+    setAnimationFrameRate(rate){
+        if(rate >= 1)
+            this.animationFrameRate = 1/rate;
+        else
+            this.animationFrameRate = rate;
     }
     
     /* Casts a ray to the objects in the scene, returning the intersection with
@@ -136,12 +165,26 @@ class HtmlElement3D {
         var observer = new MutationObserver(this.update.bind(this));
         var config = {attributes: true, childList: true, characterData: true, subtree: true};
         observer.observe(this.domElement, config);
+        this.domElement.addEventListener("animationstart", this.startAnimation.bind(this));
+        this.domElement.addEventListener("animationstop", this.stopAnimation.bind(this));
         
         this.convertImagesToDataUrl();
     }
     
     get object3D() {
         return this.obj;
+    }
+
+    startAnimation(){
+        this.performingAnimation = true;
+    }
+
+    stopAnimation(){
+        this.performingAnimation = false;
+    }
+
+    get isPerformingAnimation(){
+        return this.performingAnimation;
     }
     
     update() {

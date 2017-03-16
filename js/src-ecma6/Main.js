@@ -158,6 +158,7 @@ function render(dt) {
     if(mirrorRenderer) {
         mirrorRenderer.render(scene, camera);
     }
+    vrElements.animateElements(dt);
     //renderer.clearDepth();
     //effect.render(hudScene, camera);
 }
@@ -194,6 +195,10 @@ class HTML2VR {
         vrElements.setStylesheet.apply(vrElements, args);
     }
 
+    static setAnimationFrameRate(rate){
+        vrElements.setAnimationFrameRate(rate);
+    }
+
 
     static setVrOnlyStylesheet(sheet) {
         vrOnlyStylesheet = sheet;
@@ -202,8 +207,8 @@ class HTML2VR {
 
     static useVrOnlyStylesheet(bool){
         for( var i in document.styleSheets ){
-            if( document.styleSheets[i].ownerNode && document.styleSheets[i].ownerNode.id === vrOnlyStylesheet) {
-                void(document.styleSheets.item(i).disabled = !bool );
+            if( document.styleSheets[i].ownerNode && document.styleSheets[i].ownerNode.id === vrOnlyStylesheet ) {
+                document.styleSheets.item(i).disabled = !bool;
             }
         }
     }

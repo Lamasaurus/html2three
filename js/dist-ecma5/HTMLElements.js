@@ -1,6 +1,18 @@
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
 
 var ThreeHtmlElements = function () {
     function ThreeHtmlElements() {
@@ -11,6 +23,9 @@ var ThreeHtmlElements = function () {
 
         this.elements = [];
         this.domStyles = null;
+        this.performingAnimation = false;
+        this.totaldt = 0;
+        this.setAnimationFrameRate(15);
     }
 
     _createClass(ThreeHtmlElements, [{
@@ -62,8 +77,31 @@ var ThreeHtmlElements = function () {
             this.elements.push(element3D);
         }
     }, {
-        key: "castRayToElement",
+        key: "animateElements",
+        value: function animateElements(dt) {
+            if (HTML2VR.inVR) {
 
+                this.totaldt += dt;
+
+                if (this.totaldt >= this.animationFrameRate) {
+                    this.totaldt = 0;
+                    for (var i in this.elements) {
+                        if (this.elements[i].isPerformingAnimation) this.elements[i].update();
+                    }
+                }
+            }
+        }
+
+        /* Asumes that if the rate is bigger or aqual to 1, that the user means rate per seconde 
+         * (like 60fps). And when the users gives a rate lower than 0 he means the amount of
+         * sencondes that need to pass before the next frame (like 0.03 secondes per frame).
+         */
+
+    }, {
+        key: "setAnimationFrameRate",
+        value: function setAnimationFrameRate(rate) {
+            if (rate >= 1) this.animationFrameRate = 1 / rate;else this.animationFrameRate = rate;
+        }
 
         /* Casts a ray to the objects in the scene, returning the intersection with
          * an object. If a maximum distance is specified, intersections further than
@@ -71,6 +109,9 @@ var ThreeHtmlElements = function () {
          * a ray is cast from a knuckle and maxDistance is set such that the ray will
          * not extend past the tip of that finger.
          */
+
+    }, {
+        key: "castRayToElement",
         value: function castRayToElement(maxDistance) {
             for (var i = 0; i < this.elements.length; i++) {
                 var intersects = this.raycaster.intersectObject(this.elements[i].object3D);
@@ -154,11 +195,23 @@ var HtmlElement3D = function () {
         var observer = new MutationObserver(this.update.bind(this));
         var config = { attributes: true, childList: true, characterData: true, subtree: true };
         observer.observe(this.domElement, config);
+        this.domElement.addEventListener("animationstart", this.startAnimation.bind(this));
+        this.domElement.addEventListener("animationstop", this.stopAnimation.bind(this));
 
         this.convertImagesToDataUrl();
     }
 
     _createClass(HtmlElement3D, [{
+        key: "startAnimation",
+        value: function startAnimation() {
+            this.performingAnimation = true;
+        }
+    }, {
+        key: "stopAnimation",
+        value: function stopAnimation() {
+            this.performingAnimation = false;
+        }
+    }, {
         key: "update",
         value: function update() {
             /* https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Drawing_DOM_objects_into_a_canvas */
@@ -245,7 +298,6 @@ var HtmlElement3D = function () {
     }, {
         key: "convertImagesToDataUrl",
 
-
         /* Rendering IMG tags into an SVG only works when that image has a data url,
          * so we convert all images to a data URL here. */
         value: function convertImagesToDataUrl() {
@@ -267,6 +319,11 @@ var HtmlElement3D = function () {
         key: "object3D",
         get: function () {
             return this.obj;
+        }
+    }, {
+        key: "isPerformingAnimation",
+        get: function () {
+            return this.performingAnimation;
         }
     }], [{
         key: "isSupported",
